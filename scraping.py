@@ -11,7 +11,7 @@ def scrape_all():
     executable_path={'executable_path':ChromeDriverManager().install()}
     browser=Browser('chrome', **executable_path, headless=True)
 
-    news_title, news_parragraph=mars_news(browser)
+    news_title, news_paragraph=mars_news(browser)
 
     #run all scrapping functions and store results in dictionary
     data={
@@ -19,7 +19,8 @@ def scrape_all():
         'news_paragraph': news_paragraph,
         'featured_image':featured_image(browser),
         'facts': mars_facts(),
-        'last_modified':dt.datetime.now()
+        'last_modified':dt.datetime.now(),
+        'hemisphere_dict': hemispheres(browser)
     }
 
     #stop webdriver and return data
@@ -60,7 +61,7 @@ def mars_news(browser):
 # ### JPL Space Imagees Featured image
 
 # declare and define our function
-def features_image(browser):
+def featured_image(browser):
 
     # Visit URL
     url = 'https://spaceimages-mars.com'
@@ -109,6 +110,28 @@ def mars_facts():
     #convert dataframe into HTML format, add bootstrap
     return df.to_html(classes='table table-striped')
 
+def hemispheres(browser):
+    hemisphere_dict = {}
+
+    url = 'https://marshemispheres.com/'
+
+    browser.visit(url)
+
+    browser.is_element_present_by_css('div.list_text', wait_time=1)
+
+    for i in range (4):
+        titles=browser.find_by_css('h3')
+        titles[i].click()
+        html=browser.html
+        soup=BeautifulSoup(html, 'html.parser')
+        url=soup.find('img', class_='wide-image')['src']
+        tile=soup.find('h2', class_='title').txt
+        image_url = 'https://astrogeology.usgs.gov'+ url
+        image_dict = {"title":titles,"image_url":url}
+        hemisphere_image_urls.append('image_dict')
+        browser.back()
+
+    return hemisphere_dict
 
 if __name__ == '__main__':
     # if running as script, print scraped data
